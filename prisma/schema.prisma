@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int           @id @default(autoincrement())
+  email              String        @unique
+  password           String
+  name               String
+  username           String        @unique
+  passwordResetToken String?
+  resetTokenExp      BigInt?
+  about              String?
+  userPhoto          String?
+  websiteUrl         String?
+  country            String
+  Posts              Post[]        @relation("UserPosts")
+  Comment            Comment[]
+  // following          User[]     @relation("UserFollows")
+  // followers          User[]     @relation("UserFollows")
+  Love               Love[]
+  Favorite           Favorite[]
+  Followers          UserFollows[] @relation("UserAsFollower")
+  Following          UserFollows[] @relation("UserAsFollowing")
+}
+
+model UserFollows {
+  followerId  Int
+  followingId Int
+  follower    User @relation("UserAsFollower", fields: [followerId], references: [id])
+  following   User @relation("UserAsFollowing", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  author      User       @relation("UserPosts", fields: [authorId], references: [id])
+  authorId    Int
+  title       String?
+  description String?
+  image       String
+  Comment     Comment[]
+  Favorite    Favorite[]
+
+  @@map("Pin")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  Post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  parent    Comment?  @relation("ParentChild", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  Children  Comment[] @relation("ParentChild")
+  Love      Love[]
+}
+
+model Favorite {
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  userId    Int
+  postId    Int
+
+  @@id([userId, postId])
+}
+
+// model UserFollows{
+
+// }
+model Love {
+  user      User    @relation(fields: [userId], references: [id])
+  comment   Comment @relation(fields: [commentId], references: [id])
+  userId    Int
+  commentId Int
+
+  @@id([userId, commentId])
+}
