@@ -10,7 +10,7 @@ const __dirname = dirname(new URL(import.meta.url).pathname);
 const crypto = await import("node:crypto");
 dotenv.config();
 
-//deleting image if error createdD
+//deleting image if error created
 async function deleteImage(path) {
   try {
     await fs.unlink(path);
@@ -143,16 +143,16 @@ export const getProfile = async (req, res, next) => {
     const user = await prisma.user.findFirst({
       where: { username: username },
       select: {
-        id: true,
+        id: false,
         username: true,
         name: true,
         userPhoto: true,
         about: true,
+        country: true,
         websiteUrl: true,
         passwordResetToken: false,
         resetTokenExp: false,
         password: false,
-        country: false,
       },
     });
     if (!user) {
@@ -201,6 +201,76 @@ export const getProfile = async (req, res, next) => {
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+export const editProfile = async (req, res, next) => {
+  const username = req.params.username;
+  //updated data if every field don't change but the old data
+  const updatedEmail = req.body.email;
+  const upadtedAbout = req.body.about ? req.body.about : null;
+  const upadtedWebsiteUrl = req.body.websiteUrl ? req.body.websiteUrl : null;
+  const updateName = req.body.name;
+  const userPhoto = req.body.image;
+  const updatedUsername = req.body.username;
+  try {
+    const checkId = await prisma.user.findUnique({
+      where: { id: +req.userId },
+    });
+    if (checkId.username !== username) {
+      const error = new Error("you can edit your profile only ");
+      error.statusCode = 406;
+      return next(error);
+    }
+    if (checkId.username !== updatedUsername) {
+      const checkUserName = await prisma.user.findUnique({
+        where: { username: updatedUsername },
+      });
+      if (checkUserName) {
+        const error = new Error("Username is used");
+        error.statusCode = 406;
+        return next(error);
+      }
+    }
+    if (req.file) {
+      userPhoto = req.file.path;
+    }
+
+    if (checkId.email !== updatedEmail) {
+      const checkEmail = await prisma.user.findFirst({
+        where: { email: updatedEmail },
+      });
+      if (checkEmail) {
+        const error = new Error("email is used");
+        error.statusCode = 406;
+        return next(error);
+      }
+    }
+
+    const updateUser = await prisma.user.update({
+      where: { username: username },
+      data: {
+        username: updatedUsername,
+        email: updatedEmail,
+        username: username,
+        name: updateName,
+        userPhoto: userPhoto,
+        about: upadtedAbout,
+        websiteUrl: upadtedWebsiteUrl,
+      },
+    });
+    res.status(200).json({
+      status: true,
+      updated: updateUser,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    if (req.file) {
+      deleteImage(userPhoto);
     }
     next(error);
   }
@@ -302,7 +372,11 @@ export const newPass = async (req, res, next) => {
     }
     const newPassHash = await bcrypt.hash(newPassword, 12);
     const user = await prisma.user.update({
-      where: { passwordResetToken: token, username: username },
+      where: {
+        passwordResetToken: token,
+        username: username,
+        resetTokenExp: { gt: Date.now() },
+      },
       data: {
         password: newPassHash,
         passwordResetToken: null,

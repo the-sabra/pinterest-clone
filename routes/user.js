@@ -26,6 +26,7 @@ router.post(
 );
 
 router.get("/profile/:username", checkAuth, userController.getProfile);
+router.put("/profile/:username", checkAuth, userController.editProfile);
 router.post(
   "/password/reset",
   [validator.check("email").not().isEmpty().isEmail()],

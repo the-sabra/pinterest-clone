@@ -24,8 +24,6 @@ model User {
   country            String
   Posts              Post[]        @relation("UserPosts")
   Comment            Comment[]
-  // following          User[]     @relation("UserFollows")
-  // followers          User[]     @relation("UserFollows")
   Love               Love[]
   Favorite           Favorite[]
   Followers          UserFollows[] @relation("UserAsFollower")
