@@ -60,7 +60,7 @@ export const signup = async (req, res, next) => {
       deleteImage(userPhoto);
       return next(error);
     }
-    const hashPassword = await bcrypt.hash(password, 12);
+    
     const newUser = await prisma.user.create({
       data: {
         email: email,

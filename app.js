@@ -1,14 +1,15 @@
 import express from "express";
-import bodyParser from "body-parser";
 import multer from "multer";
-import path from "path";
+import bodyParser from "body-parser";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
 import { v4 as uuidv4 } from "uuid";
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const app = express();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    console.log(path.join(__dirname, "images"));
+    console.log(join(__dirname, "images"));
     cb(null, "images");
   },
   filename: function (req, file, cb) {
@@ -27,25 +28,14 @@ const fileFilter = (req, file, cb) => {
     cb(null, false);
   }
 };
-app.use(express.json());
+app.use(bodyParser.json());
+app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
 
-app.use(
-  multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 1e6 },
-  }).single("image")
-);
-app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(join(__dirname, "images")));
 
-app.post("/test", (req, res, next) => {
-  console.log(req.file);
-  res.send("upload complete");
-});
 import userRoutes from "./routes/user.js";
 import pinRoutes from "./routes/pin.js";
 import commentRoutes from "./routes/comments.js";
-import { toUSVString } from "util";
 //User Router
 app.use("/user", userRoutes);
 
@@ -54,13 +44,20 @@ app.use(pinRoutes);
 
 //Comment Router
 app.use(commentRoutes);
+// to solve CORS Errors
+// to allow the client side to send data from server
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Origin", "*");
+  res.setHeader("Access-Control-Methods", "POST,PUT,GET");
+  res.setHeader("Access-Control-Headers", "Content-Type, Authorization");
+  next();
+});
 //error middleware
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
-
   res.status(status).json({ message: message, data: data, status: false });
 });
 

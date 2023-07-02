@@ -1,28 +1,39 @@
-# pinterest-clonePinterest Clone
-This project is a Pinterest clone built in  (MySQl, Express, Node.js) 
+# Pinterest-clone Overview
+This project is a Pinterest clone you can share your photos and create favorite friends 
 
-Features
-- User authentication and authorization using JWT tokens
-- Board and pin creation, editing, and deletion
+## Technologies Used
+- `JavaScript`
+- `Express`: Fast, unopinionated, minimalist web framework for Node.js
+- `MySQL`: a relational database management system.
+- `Prisma`: an open-source database ORM (Object-relational mapping).
+
 ## Getting Started
 To get started with the app, you'll need to have Node.js and MySQL installed on your machine.
 
 ## Installation
-1. Clone the repo to your local machine: git clone https://github.com/omarsabra1/pinterest-clone.git
+1. Clone the repo to your local machine: `git clone https://github.com/omarsabra1/pinterest-clone.git`.
 
-2. Install the dependencies using NPM:` cd pinterest-clone && npm install`
+2. Install the dependencies using NPM: ` cd pinterest-clone `
 
-3. Create a .env file in the root directory and add the following environment variables:
+3. Install the necessary dependencies: `npm install`.
 
-```bash
-DATABASE_URL=<mongo_db_uri>
-JWT_SECRET=<jwt_secret>
-EMAIL_PASS=<EMAIL_CONFIG>
-```
-4. Start the development server: `npm run` 
+## Running the Application
 
-## Usage
-Once the server is running, you can access the app by visiting `http://localhost:3000` in your browser. You can create a new account or use the following credentials to log in:
+- To run the app in development mode, use: `npm run dev`.
+- To run the app in production mode, use: `npm run start`.
 
-License
-This project is licensed under the MIT License. See the LICENSE file for more information.
+## Code Structure
+
+The application code is organized as follows:
+- `app.js`: The entry point of the application.
+- `prisma/db.js`: he makes a Prisma Client to connect to the Database.
+- `controller/comments.js`: Manages the creation of comments and operations.
+- `controller/user.js`: Manages user authentication and creation.
+- `controller/pin.js`: Mange pin(posts/photos) and creation.
+- `middleware/isAuth.js`: Verifies JWT tokens.
+
+## License
+Pinterest-clone is [MIT licensed](LICENSE.txt).
+
+## Contact Information
+Feel free to reach out on LinkedIn or via email.
